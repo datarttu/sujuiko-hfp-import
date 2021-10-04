@@ -2,7 +2,7 @@
 
 ## Planning
 
-- [ ] Shiny UI base
+- [x] Shiny UI base
 - [ ] Script / function: save latest list of VP blobs to file
   - Slow to fetch the full list every time -> get ready to cache it e.g. every day
 - [ ] Create Docker volume logic
