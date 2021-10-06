@@ -43,3 +43,4 @@ renv/
 
 # App specific
 app/config.yml
+app/remote_files.rds
