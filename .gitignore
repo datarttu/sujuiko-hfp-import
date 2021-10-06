@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # renv
 renv/
+
+# App specific
+app/config.yml
