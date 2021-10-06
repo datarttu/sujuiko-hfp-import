@@ -1,5 +1,9 @@
 library(shiny)
 library(DT)
+library(callr)
+library(glue)
+
+source('functions.R')
 
 # UI ----
 ui <- fluidPage(
@@ -11,10 +15,10 @@ ui <- fluidPage(
 
       h1('Raw data available'),
 
-      textOutput(outputId = 'raw_data_list_cache_timestamp'),
+      textOutput(outputId = 'remote_files_cache_timestamp'),
 
-      actionButton(inputId = 'run_reload_data_list_cache',
-                   label = 'Reload data list'),
+      actionButton(inputId = 'reload_remote_files_cache',
+                   label = 'Reload remote data cache'),
 
       DTOutput(outputId = 'raw_data_days_table')
     ),
@@ -59,6 +63,27 @@ ui <- fluidPage(
 # SERVER ----
 server <- function(input, output, session) {
 
+  # FIXME: Make cache info available initially
+  reload_rfc <- eventReactive(input$reload_remote_files_cache, {
+    x <- callr::r_bg(func = save_remote_files_cache,
+                     supervise = TRUE)
+    return(x)
+  })
+  # FIXME: Do not interrupt cache reloading after first invalidation period
+  progress_of_reload_rfc <- reactive({
+    invalidateLater(millis = 1000, session = session)
+
+    if (reload_rfc()$is_alive()) {
+      x <- 'Reloading cache...'
+    } else {
+      x <- as.character(cache_file_modified_time())
+      x <- glue('Cache available from {x}')
+    }
+    return(x)
+  })
+  output$remote_files_cache_timestamp <- renderText({
+    progress_of_reload_rfc()
+  })
 
   # CLEANUP ----
   # TODO: Remove when deploying
