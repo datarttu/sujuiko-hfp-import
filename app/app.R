@@ -15,10 +15,12 @@ ui <- fluidPage(
 
       h1('Raw data available'),
 
-      textOutput(outputId = 'remote_files_cache_info'),
+      tags$div(textOutput(outputId = 'remote_files_cache_info'),
+               style = 'display:inline-block'),
 
-      actionButton(inputId = 'reload_remote_files_cache',
+      tags$div(actionButton(inputId = 'reload_remote_files_cache',
                    label = 'Reload remote data cache'),
+               style = 'display:inline-block'),
 
       DTOutput(outputId = 'raw_data_days_table')
     ),
