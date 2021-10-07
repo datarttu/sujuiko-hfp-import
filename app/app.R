@@ -15,7 +15,7 @@ ui <- fluidPage(
 
       h1('Raw data available'),
 
-      textOutput(outputId = 'remote_files_cache_timestamp'),
+      textOutput(outputId = 'remote_files_cache_info'),
 
       actionButton(inputId = 'reload_remote_files_cache',
                    label = 'Reload remote data cache'),
@@ -63,26 +63,20 @@ ui <- fluidPage(
 # SERVER ----
 server <- function(input, output, session) {
 
-  # FIXME: Make cache info available initially
-  reload_rfc <- eventReactive(input$reload_remote_files_cache, {
-    x <- callr::r_bg(func = save_remote_files_cache,
-                     supervise = TRUE)
-    return(x)
+  remote_files_cache <- reactiveValues(
+    info = cache_file_modified_time_info(),
+    data = get_remote_files_cache()
+  )
+  output$remote_files_cache_info <- renderText({
+    remote_files_cache$info
   })
-  # FIXME: Do not interrupt cache reloading after first invalidation period
-  progress_of_reload_rfc <- reactive({
-    invalidateLater(millis = 1000, session = session)
-
-    if (reload_rfc()$is_alive()) {
-      x <- 'Reloading cache...'
-    } else {
-      x <- as.character(cache_file_modified_time())
-      x <- glue('Cache available from {x}')
-    }
-    return(x)
-  })
-  output$remote_files_cache_timestamp <- renderText({
-    progress_of_reload_rfc()
+  # TODO: Run cache reload in background
+  observeEvent(input$reload_remote_files_cache, {
+    withProgress({
+      save_remote_files_cache()
+      remote_files_cache$info <- cache_file_modified_time_info()
+      remote_files_cache$data <- get_remote_files_cache()
+    }, message = 'Reloading file list from storage...')
   })
 
   # CLEANUP ----
