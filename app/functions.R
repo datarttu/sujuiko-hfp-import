@@ -31,20 +31,21 @@ get_remote_files_list <- function(blob_prefix = CONFIG$blob_prefix) {
 #' @param cache_file RDS cache file path to save to (character)
 save_remote_files_cache <- function(blob_prefix = CONFIG$blob_prefix,
                                     cache_file = 'remote_files.rds') {
+  message(glue::glue('Fetching remote file info from {blob_prefix} ...'))
   tryCatch(
     {
       dt <- get_remote_files_list(blob_prefix = blob_prefix)
       # There should be at least this many datasets available from 4/2020 to 9/2021...
       stopifnot(nrow(dt) > 12000)
       saveRDS(dt, file = cache_file)
-      message(glue('{nrow(dt)} file metadata rows saved to {cache_file}'))
+      message(glue::glue('{nrow(dt)} file metadata rows saved to {cache_file}'))
     },
     error = function(e) {
-      msg <- glue('{e}\n(Cache file not saved)')
+      msg <- glue::glue('{e}\n(Cache file not saved)')
       # TODO: Should not use warning for fatal errors such as missing pkgs
       warning(msg)
     }
-    )
+  )
 }
 
 #' Get latest remote file information from cache file
