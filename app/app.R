@@ -2,6 +2,7 @@ library(shiny)
 library(DT)
 library(callr)
 library(glue)
+library(magrittr)
 
 source('functions.R')
 
