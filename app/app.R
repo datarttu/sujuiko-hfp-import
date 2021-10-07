@@ -20,7 +20,7 @@ ui <- fluidPage(
                style = 'display:inline-block'),
 
       tags$div(actionButton(inputId = 'reload_remote_files_cache',
-                   label = 'Reload remote data cache'),
+                            label = 'Reload remote data cache'),
                style = 'display:inline-block'),
 
       DTOutput(outputId = 'raw_data_days_table')
