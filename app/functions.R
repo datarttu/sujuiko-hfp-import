@@ -61,6 +61,9 @@ get_remote_files_cache <- function(cache_file = 'remote_files.rds') {
       msg <- glue('Could not read cache:\n{e}')
       # TODO: Should not use warning for fatal errors such as missing pkgs
       warning(msg)
+      return(
+        tibble(date = Date(), hour = integer(), size_bytes = double())
+      )
     }
   )
 }
