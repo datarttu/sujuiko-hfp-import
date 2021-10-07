@@ -68,9 +68,15 @@ get_remote_files_cache <- function(cache_file = 'remote_files.rds') {
   )
 }
 
-#' Get latest modification time of cache file
+#' Get latest modification time information of cache file
 #'
 #' @param cache_file RDS cache file path
-cache_file_modified_time <- function(cache_file = 'remote_files.rds') {
-  return(file.info(cache_file)$mtime)
+cache_file_modified_time_info <- function(cache_file = 'remote_files.rds') {
+  x <- file.info(cache_file)$mtime
+  if (is.na(x)) {
+    return('Cache file not available')
+  }
+  x <- as.character(x)
+  x <- glue::glue('Cache available from {x}')
+  return(x)
 }
