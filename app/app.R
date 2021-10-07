@@ -82,6 +82,52 @@ server <- function(input, output, session) {
     }, message = 'Reloading file list from storage...')
   })
 
+  rf_date <- reactive({
+    dt <- remote_files_cache$data
+    dt <- remote_files_by_date(dt)
+    return(dt)
+  })
+  rf_date_DT <- reactive({
+    x <- DT::datatable(
+      rf_date(),
+      colnames = c('Weekday', 'Date', 'Files', 'Total size'),
+      extensions = 'Scroller',
+      options = list(scrollY = 200, deferRender = TRUE, scroller = TRUE,
+                     # Show table + column filters, no general search:
+                     dom = 't'),
+      filter = list(position = 'top'),
+      selection = 'single'
+    )
+    return(x)
+  })
+  output$raw_data_days_table <- DT::renderDT(rf_date_DT())
+
+  rf_hour <- reactive({
+    req(remote_files_cache$data,
+        rf_date(),
+        input$raw_data_days_table_rows_selected)
+    sel_rowids <- input$raw_data_days_table_rows_selected
+    hour_files_of_selected_dates <- remote_files_cache$data %>%
+      filter(date %in% rf_date()[sel_rowids, ]$date) %>%
+      # TODO: Move this logic to functions?
+      mutate(bytes_txt = gdata::humanReadable(size_bytes)) %>%
+      select(date, hour, bytes_txt)
+    return(hour_files_of_selected_dates)
+  })
+  rf_hour_DT <- reactive({
+    x <- DT::datatable(
+      rf_hour(),
+      colnames = c('Date', 'Hour', 'File size'),
+      extensions = 'Scroller',
+      options = list(scrollY = 200, deferRender = TRUE, scroller = TRUE,
+                     # Show table + column filters, no general search:
+                     dom = 't'),
+      filter = list(position = 'top')
+    )
+    return(x)
+  })
+  output$raw_files_of_day_table <- DT::renderDT(rf_hour_DT())
+
   # CLEANUP ----
   # TODO: Remove when deploying
 

@@ -3,15 +3,15 @@
 ## Planning
 
 - [x] Shiny UI base
-- [ ] Script / function: save latest list of VP blobs to file
+- [x] Script / function: save latest list of VP blobs to file
   - Slow to fetch the full list every time -> get ready to cache it e.g. every day
 - [ ] Create Docker volume logic
-  - Day/hr raw data cache
-  - Obs/jrn volume, shared with sujuikoDB
+  - [ ] Day/hr raw data cache
+  - [ ] Obs/jrn volume, shared with sujuikoDB
 - [ ] Show VP csv files available
-  - File list with sizes
-  - Mark files already in the cache
-  - Selectable rows
+  - [x] File list with sizes
+  - [ ] Mark files already in the cache
+  - [x] Selectable rows
 - [ ] Fetch VP csv files selected from the list (default: all hours) -> background job
 - [ ] Restrict VP csv cache to a maximum size, check before fetching
 - [ ] Delete VP csv files by selecting from UI

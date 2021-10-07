@@ -1,6 +1,7 @@
 library(dplyr)
 library(stringr)
 library(lubridate)
+library(gdata)
 
 CONFIG <- config::get(file = 'config.yml')
 
@@ -78,5 +79,19 @@ cache_file_modified_time_info <- function(cache_file = 'remote_files.rds') {
   }
   x <- as.character(x)
   x <- glue::glue('Cache available from {x}')
+  return(x)
+}
+
+#' Aggregate date-hour remote files tibble by date
+#'
+#' @param date_hour_tibble Tibble returned by `get_remote_files_cache()`.
+remote_files_by_date <- function(date_hour_tibble) {
+  x <- date_hour_tibble %>%
+    group_by(date) %>%
+    summarise(n_files = n(),
+              total_bytes = sum(size_bytes, na.rm = TRUE)) %>%
+    mutate(wday = wday(date, label = TRUE, week_start = 1, locale = 'fi_FI.UTF-8'),
+           total_bytes_txt = gdata::humanReadable(total_bytes)) %>%
+    select(wday, date, n_files, total_bytes_txt)
   return(x)
 }
