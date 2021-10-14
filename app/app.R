@@ -108,13 +108,12 @@ server <- function(input, output, session) {
     req(remote_files_cache$data,
         rf_date(),
         input$raw_data_days_table_rows_selected)
-    sel_rowids <- input$raw_data_days_table_rows_selected
-    hour_files_of_selected_dates <- remote_files_cache$data %>%
-      filter(date %in% rf_date()[sel_rowids, ]$date) %>%
-      # TODO: Move this logic to functions?
-      mutate(bytes_txt = gdata::humanReadable(size_bytes)) %>%
-      select(date, hour, bytes_txt)
-    return(hour_files_of_selected_dates)
+    hourly_dt <- hourly_files_of_dates(
+      date_hour_tibble = remote_files_cache$data,
+      # Date values from the active (clicked) rows in the per-date table:
+      dates = rf_date()[input$raw_data_days_table_rows_selected, ]$date
+    )
+    return(hourly_dt)
   })
   rf_hour_DT <- reactive({
     x <- DT::datatable(

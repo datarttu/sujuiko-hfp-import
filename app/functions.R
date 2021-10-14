@@ -92,6 +92,21 @@ remote_files_by_date <- function(date_hour_tibble) {
               total_bytes = sum(size_bytes, na.rm = TRUE)) %>%
     mutate(wday = wday(date, label = TRUE, week_start = 1, locale = 'fi_FI.UTF-8'),
            total_bytes_txt = gdata::humanReadable(total_bytes)) %>%
-    select(wday, date, n_files, total_bytes_txt)
+    select(wday, date, n_files, total_bytes_txt) %>%
+    arrange(desc(date))
+  return(x)
+}
+
+#' Get hourly remote files of given dates
+#'
+#' @param date_hour_tibble Tibble returned by `get_remote_files_cache()`.
+#' @param dates Dates to get hourly rows from.
+#'
+#' @return A subset of `date_hour_tibble`.
+hourly_files_of_dates <- function(date_hour_tibble, dates) {
+  x <- date_hour_tibble %>%
+    filter(date %in% dates) %>%
+    mutate(bytes_txt = gdata::humanReadable(size_bytes)) %>%
+    select(date, hour, bytes_txt)
   return(x)
 }
