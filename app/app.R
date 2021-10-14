@@ -66,6 +66,7 @@ ui <- fluidPage(
 # SERVER ----
 server <- function(input, output, session) {
 
+  # Remote files ----
   remote_files_cache <- reactiveValues(
     info = cache_file_modified_time_info(),
     data = get_remote_files_cache()
@@ -102,6 +103,7 @@ server <- function(input, output, session) {
   })
   output$raw_data_days_table <- DT::renderDT(rf_date_DT())
 
+  # Hourly files by sel. date ----
   rf_hour <- reactive({
     req(remote_files_cache$data,
         rf_date(),
