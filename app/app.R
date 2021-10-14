@@ -31,7 +31,10 @@ ui <- fluidPage(
 
       h1('Raw data of the selected day'),
 
-      DTOutput(outputId = 'raw_files_of_day_table')
+      DTOutput(outputId = 'raw_files_of_day_table'),
+
+      actionButton(inputId = 'rf_download_selected',
+                   label = 'Download selected files (0)')
     )
   ),
 
@@ -128,6 +131,41 @@ server <- function(input, output, session) {
     return(x)
   })
   output$raw_files_of_day_table <- DT::renderDT(rf_hour_DT())
+
+  # Downloading remote files ----
+
+  rf_selections_listen <- reactive({
+    list(input$raw_data_days_table_rows_selected,
+         input$raw_files_of_day_table_rows_selected)
+  })
+
+  # No selected hours == treat all hours as selected,
+  # which makes downloading entire days easier.
+  rf_hour_selected <- reactive({
+    s <- input$raw_files_of_day_table_rows_selected
+    if (length(s)) {
+      x <- rf_hour()[s, ]
+    } else {
+      x <- rf_hour()
+    }
+    return(x)
+  })
+  # Update download button with the N of sel. files
+  observeEvent(rf_selections_listen(), {
+    if (is.null(rf_hour_selected())) {
+      cnt <- '0'
+    } else {
+      cnt <- nrow(rf_hour_selected())
+      if (cnt == nrow(rf_hour())) {
+        cnt <- 'all'
+      } else {
+        cnt <- as.character(cnt)
+      }
+    }
+    new_label <- sprintf('Download selected files (%s)', cnt)
+    updateActionButton(inputId = 'rf_download_selected',
+                       label = new_label)
+  })
 
   # CLEANUP ----
   # TODO: Remove when deploying

@@ -2,6 +2,8 @@ library(dplyr)
 library(stringr)
 library(lubridate)
 library(gdata)
+library(AzureStor)
+library(R.utils)
 
 CONFIG <- config::get(file = 'config.yml')
 
@@ -21,7 +23,7 @@ get_remote_files_list <- function(blob_prefix = CONFIG$blob_prefix) {
            hour = as.integer(str_sub(date_hr, -2, -1))) %>%
     # We expect data only from 2020 on, older timestamps are considered errors.
     filter(year(date) > 2019) %>%
-    select(date, hour, size_bytes = size)
+    select(name, date, hour, size_bytes = size)
   return(dt_hr)
 }
 
@@ -63,7 +65,10 @@ get_remote_files_cache <- function(cache_file = 'remote_files.rds') {
       # TODO: Should not use warning for fatal errors such as missing pkgs
       warning(msg)
       return(
-        tibble(date = Date(), hour = integer(), size_bytes = double())
+        tibble(name = character(),
+               date = Date(),
+               hour = integer(),
+               size_bytes = double())
       )
     }
   )
@@ -110,3 +115,32 @@ hourly_files_of_dates <- function(date_hour_tibble, dates) {
     select(date, hour, bytes_txt)
   return(x)
 }
+
+#' Download and gzip hourly remote file
+#' @param name File name inside the storage
+#' @param storage_url Storage root URL
+#' @param target_dir Target directory to save to
+#' @param do_gzip Gzip the result file?
+#'
+#' @return Path of the file (invisibly)
+download_hourly_file <- function(
+  name,
+  storage_url = CONFIG$storage_url,
+  target_dir = CONFIG$local_raw_files_dir,
+  do_gzip = TRUE
+) {
+  if (!(str_sub(storage_url, -1, -1) == '/')) {
+    storage_url = paste0(storage_url, '/')
+  }
+  full_url <- paste0(storage_url, name)
+  # For the local file, drop parent dirs from the name:
+  name_parts <- str_split(name, '/')[[1]]
+  name_last <- name_parts[length(name_parts)]
+  destfile <- file.path(target_dir, name_last)
+  download.file(url = full_url, destfile = destfile)
+  if (do_gzip) {
+    destfile <- R.utils::gzip(destfile)
+  }
+  invisible(destfile)
+}
+
